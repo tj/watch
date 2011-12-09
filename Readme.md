@@ -69,7 +69,7 @@ $ fg 1
 
 ### Auto-build CSS / JS etc
 
- Need to build CSS or JavaScript dependencies? use a _Makefile_. With the large quantity of copy-cats (Rake,Jake,Sake,Cake...) people seem to be forgetting that Make is awesome, if you take a little bit of time to learn it you'll love it (or at least most of it).
+ Need to build CSS or JavaScript dependencies? use a _Makefile_. With the large quantity of copy-cats (Rake,Jake,Sake,Cake...) people seem to be forgetting that Make is awesome, if you take a little bit of time to learn it you'll love it (or at least most of it). Make will utilize `mtime` and only build what's necessary, this is _great_.
 
  Let's say we had some Jade templates, even some nested in sub-directories, we could list them in a _Makefile_ quite easily.
  

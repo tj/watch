@@ -64,7 +64,7 @@ $ watch make test &
  stop watch simply foreground the job and ^C:
  
 ```
-$ fg 1
+$ fg
 ```
 
 ### Auto-build CSS / JS etc

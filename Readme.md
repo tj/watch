@@ -101,7 +101,7 @@ jade < templates/baz/raz.jade > templates/baz/raz.html
 jade < templates/foo.jade > templates/foo.html
 ```
 
- We can also add a `clean` pseudo-target to remove the compiled files with `make clean`. Here it's listed to the right of `.PHONY:`, telling make that it does not expect a file named `./clean` on the fs, so it wont compare mtimes etc. Make is smart about re-executing these actions, if you `make` again you'll notice that since none of the dependencies have changed it'll simply tell you "make: Nothing to be done for `all'.", now doesn't this seem familiar? kinda like all these ad-hoc file watchers hey.
+ We can also add a `clean` pseudo-target to remove the compiled files with `make clean`. Here it's listed to the right of `.PHONY:`, telling make that it does not expect a file named `./clean` on the fs, so it wont compare mtimes etc. Make is smart about re-executing these actions, if you `make` again you'll notice that since none of the dependencies have changed it'll simply tell you "make: Nothing to be done for `all'.".
 
 ```make
 JADE = $(shell find templates -name "*.jade")

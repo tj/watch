@@ -90,6 +90,16 @@ redirect_stdout(const char *path) {
 }
 
 /*
+ * Check if `arg` is the given short-opt or long-opt.
+ */
+
+int
+option(char *small, char *large, const char *arg) {
+  if (!strcmp(small, arg) || !strcmp(large, arg)) return 1;
+  return 0;
+}
+
+/*
  * Parse argv.
  */
 
@@ -105,24 +115,22 @@ main(int argc, const char **argv){
     const char *arg = argv[i];
 
     // -h, --help
-    if (!strcmp("-h", arg) || !strcmp("--help", arg)) {
-      usage();
-    }
+    if (option("-h", "--help", arg)) usage();
 
     // -q, --quiet
-    if (!strcmp("-q", arg) || !strcmp("--quiet", arg)) {
+    if (option("-q", "--quiet", arg)) {
       quiet = 1;
       continue;
     }
 
     // -V, --version
-    if (!strcmp("-V", arg) || !strcmp("--version", arg)) {
+    if (option("-v", "--version", arg)) {
       printf("%s\n", VERSION);
       exit(1);
     }
 
     // -i, --interval <n>
-    if (!strcmp("-i", arg) || !strcmp("--interval", arg)) {
+    if (option("-i", "--interval", arg)) {
       if (argc-1 == i) {
         fprintf(stderr, "\n  --interval requires an argument\n\n");
         exit(1);

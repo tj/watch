@@ -116,27 +116,28 @@ main(int argc, const char **argv){
 
   int len = 0;
   char *args[ARGS_MAX];
+  unsigned int parseOptions = 1;
 
   for (int i = 1; i < argc; ++i) {
     const char *arg = argv[i];
 
     // -h, --help
-    if (option("-h", "--help", arg)) usage();
+    if (parseOptions && option("-h", "--help", arg)) usage();
 
     // -q, --quiet
-    if (option("-q", "--quiet", arg)) {
+    if (parseOptions && option("-q", "--quiet", arg)) {
       quiet = 1;
       continue;
     }
 
     // -V, --version
-    if (option("-v", "--version", arg)) {
+    if (parseOptions && option("-v", "--version", arg)) {
       printf("%s\n", VERSION);
       exit(1);
     }
 
     // -i, --interval <n>
-    if (option("-i", "--interval", arg)) {
+    if (parseOptions && option("-i", "--interval", arg)) {
       if (argc-1 == i) {
         fprintf(stderr, "\n  --interval requires an argument\n\n");
         exit(1);
@@ -157,6 +158,7 @@ main(int argc, const char **argv){
     }
 
     args[len++] = (char *) arg;
+    parseOptions = 0;
   }
 
   // <cmd>

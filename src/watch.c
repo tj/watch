@@ -38,6 +38,12 @@
 static int quiet = 0;
 
 /*
+ * Use exec instead of system
+ */
+
+static int exec = 0;
+
+/*
  * Output command usage.
  */
 
@@ -51,6 +57,7 @@ usage() {
     "\n"
     "    -q, --quiet           only output stderr\n"
     "    -i, --interval <n>    interval in seconds or ms defaulting to 1\n"
+    "    -x, --exec            use exec instead of giving the cmd to 'sh -x'\n"
     "    -V, --version         output version number\n"
     "    -h, --help            output this help information\n"
     "\n"
@@ -118,6 +125,7 @@ main(int argc, const char **argv){
   char *args[ARGS_MAX];
   unsigned int parseOptions = 1;
 
+
   for (int i = 1; i < argc; ++i) {
     const char *arg = argv[i];
 
@@ -151,6 +159,12 @@ main(int argc, const char **argv){
       continue;
     }
 
+    // -x, --exec
+    if (parseOptions && option("-x", "--exec", arg)) {
+      exec = 1;
+      continue;
+    }
+
     // cmd args
     if (len == ARGS_MAX) {
       fprintf(stderr, "number of arguments exceeded %d\n", len);
@@ -170,6 +184,19 @@ main(int argc, const char **argv){
   // null
   args[len] = 0;
 
+  // Assemble command
+  char *command = strdup(args[0]);
+  int command_length = strlen(command);
+  for (int i=1; i < len; i++) {
+    int plen = strlen(args[i]);
+    command = realloc(command, command_length + plen + 2);
+    char *endp = command + command_length;
+    *endp = ' ';
+    memcpy(endp + 1, args[i], plen);
+    command_length += 1 + plen;
+    command[command_length] = '\0';
+  }
+
   // exec loop
   loop: {
     pid_t pid;
@@ -182,7 +209,20 @@ main(int argc, const char **argv){
       // child
       case 0:
         if (quiet) redirect_stdout("/dev/null");
-        execvp(args[0], args);
+        if (exec) {
+          if(execvp(args[0], args)==-1) {
+            perror("exec");
+            exit(4);
+          }
+        } else {
+          int sysresult=system(command);
+          if (!WIFEXITED(sysresult)) { /* child exits nonzero if command does */
+            exit(1);
+          } else {
+            exit(WEXITSTATUS(sysresult));
+          }
+        }
+
       // parent
       default:
         if (waitpid(pid, &status, 0) < 0) {

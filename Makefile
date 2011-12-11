@@ -1,5 +1,5 @@
 
-CFLAGS = -std=c99 -Wall -pedantic
+CFLAGS = -std=c99 -D_POSIX_C_SOURCE=199309L -Wall -pedantic
 PREFIX = /usr/local
 
 watch: src/watch.c

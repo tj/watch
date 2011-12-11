@@ -51,7 +51,7 @@ usage() {
     "\n"
     "    -q, --quiet           only output stderr\n"
     "    -i, --interval <n>    interval in seconds or ms defaulting to 1\n"
-    "    -V, --version         output version number\n"
+    "    -v, --version         output version number\n"
     "    -h, --help            output this help information\n"
     "\n"
     );

@@ -130,7 +130,7 @@ main(int argc, const char **argv){
     }
 
     // -V, --version
-    if (option("-v", "--version", arg)) {
+    if (option("-V", "--version", arg)) {
       printf("%s\n", VERSION);
       exit(1);
     }

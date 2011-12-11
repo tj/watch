@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
+
 #include <fcntl.h>
 #include <sys/wait.h>
 
@@ -73,7 +75,13 @@ milliseconds(const char *str) {
 
 void
 mssleep(int ms) {
-  usleep(ms * 1000);
+  struct timespec req={0};
+  time_t sec=(int)(ms/1000);
+  ms=ms-(sec*1000);
+  req.tv_sec=sec;
+  req.tv_nsec=ms*1000000L;
+     while(nanosleep(&req,&req)==-1)
+         continue;
 }
 
 /*
@@ -109,7 +117,7 @@ main(int argc, const char **argv){
   int interval = DEFAULT_INTERVAL;
 
   int len = 0;
-  char *args[ARGS_MAX] = {};
+  char *args[ARGS_MAX] = {0};
 
   for (int i = 1; i < argc; ++i) {
     const char *arg = argv[i];

@@ -109,7 +109,7 @@ main(int argc, const char **argv){
   int interval = DEFAULT_INTERVAL;
 
   int len = 0;
-  char *args[ARGS_MAX] = {};
+  char *args[ARGS_MAX];
 
   for (int i = 1; i < argc; ++i) {
     const char *arg = argv[i];

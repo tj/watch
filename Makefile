@@ -1,6 +1,6 @@
 
 CFLAGS = -std=c99 -D_POSIX_C_SOURCE=199309L -Wall -pedantic
-PREFIX = /usr/local
+PREFIX ?= /usr/local
 
 watch: src/watch.c
 	$(CC) $< $(CFLAGS) -o $@

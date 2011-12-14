@@ -115,12 +115,12 @@ main(int argc, const char **argv){
   int interval = DEFAULT_INTERVAL;
 
   int len = 0;
-  int parse = 1;
+  int interpret = 1;
   char *args[ARGS_MAX];
 
   for (int i = 1; i < argc; ++i) {
     const char *arg = argv[i];
-    if (!parse) goto arg;
+    if (!interpret) goto arg;
 
     // -h, --help
     if (option("-h", "--help", arg)) usage();
@@ -160,7 +160,7 @@ main(int argc, const char **argv){
 
   arg:
     args[len++] = (char *) arg;
-    parse = 0;
+    interpret = 0;
   }
 
   // <cmd>

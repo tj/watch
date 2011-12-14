@@ -115,29 +115,30 @@ main(int argc, const char **argv){
   int interval = DEFAULT_INTERVAL;
 
   int len = 0;
+  int parse = 1;
   char *args[ARGS_MAX];
-  unsigned int parseOptions = 1;
 
   for (int i = 1; i < argc; ++i) {
     const char *arg = argv[i];
+    if (!parse) goto arg;
 
     // -h, --help
-    if (parseOptions && option("-h", "--help", arg)) usage();
+    if (option("-h", "--help", arg)) usage();
 
     // -q, --quiet
-    if (parseOptions && option("-q", "--quiet", arg)) {
+    if (option("-q", "--quiet", arg)) {
       quiet = 1;
       continue;
     }
 
     // -V, --version
-    if (parseOptions && option("-v", "--version", arg)) {
+    if (option("-v", "--version", arg)) {
       printf("%s\n", VERSION);
       exit(1);
     }
 
     // -i, --interval <n>
-    if (parseOptions && option("-i", "--interval", arg)) {
+    if (option("-i", "--interval", arg)) {
       if (argc-1 == i) {
         fprintf(stderr, "\n  --interval requires an argument\n\n");
         exit(1);
@@ -157,8 +158,9 @@ main(int argc, const char **argv){
       exit(1);
     }
 
+  arg:
     args[len++] = (char *) arg;
-    parseOptions = 0;
+    parse = 0;
   }
 
   // <cmd>

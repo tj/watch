@@ -23,6 +23,21 @@ Options:
 $ make install
 ```
 
+Or in your local bin (`~/bin`)
+
+```
+$ PREFIX=~ make install
+```
+
+## About
+
+  This project is very similar to original [watch(1)](http://linux.die.net/man/1/watch) implemented in 1991, differences include:
+
+  - ansi escape sequences (colors etc)
+  - terminal is not cleared
+  - lower default interval of 1s
+  - millisecond interval resolution
+
 ## Milliseconds resolution
 
  This version of `watch(1)` support millisecond resolution

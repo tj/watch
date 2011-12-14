@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
 #include <fcntl.h>
 #include <sys/wait.h>
 
@@ -16,7 +17,7 @@
  * Command version.
  */
 
-#define VERSION "0.0.2"
+#define VERSION "0.0.3"
 
 /*
  * Default interval in milliseconds.
@@ -50,7 +51,7 @@ usage() {
     "\n"
     "    -q, --quiet           only output stderr\n"
     "    -i, --interval <n>    interval in seconds or ms defaulting to 1\n"
-    "    -V, --version         output version number\n"
+    "    -v, --version         output version number\n"
     "    -h, --help            output this help information\n"
     "\n"
     );
@@ -73,7 +74,12 @@ milliseconds(const char *str) {
 
 void
 mssleep(int ms) {
-  usleep(ms * 1000);
+  struct timespec req = {0};
+  time_t sec = (int)(ms / 1000);
+  ms = ms -(sec * 1000);
+  req.tv_sec = sec;
+  req.tv_nsec = ms * 1000000L;
+  while(-1 == nanosleep(&req, &req)) ;
 }
 
 /*
@@ -109,7 +115,7 @@ main(int argc, const char **argv){
   int interval = DEFAULT_INTERVAL;
 
   int len = 0;
-  char *args[ARGS_MAX] = {};
+  char *args[ARGS_MAX];
 
   for (int i = 1; i < argc; ++i) {
     const char *arg = argv[i];

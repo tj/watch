@@ -196,8 +196,7 @@ main(int argc, const char **argv){
         if (WEXITSTATUS(status)) {
           fprintf(stderr, "\033[90mexit: %d\33[0m\n\n", WEXITSTATUS(status));
         } else if (quiet) {
-          putchar('.');
-          fflush(stdout);
+          // ignore
         } else {
           printf("\n");
         }

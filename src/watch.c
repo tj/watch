@@ -106,6 +106,34 @@ option(char *small, char *large, const char *arg) {
 }
 
 /*
+ * Return the total string-length consumed by `strs`.
+ */
+
+int
+length(char **strs) {
+  int n = 0;
+  char *str;
+  while (str = *strs++) n += strlen(str);
+  return n + 1;
+}
+
+/*
+ * Join the given `strs` with `val`.
+ */
+
+char *
+join(char **strs, int len, char *val) {
+  --len;
+  char *buf = malloc(length(strs) + len * strlen(val));
+  char *str;
+  while (str = *strs++) {
+    strcat(buf, str);
+    if (*strs) strcat(buf, val);
+  }
+  return buf;
+}
+
+/*
  * Parse argv.
  */
 
@@ -116,7 +144,7 @@ main(int argc, const char **argv){
 
   int len = 0;
   int interpret = 1;
-  char *args[ARGS_MAX];
+  char *args[ARGS_MAX] = {0};
 
   for (int i = 1; i < argc; ++i) {
     const char *arg = argv[i];
@@ -169,8 +197,9 @@ main(int argc, const char **argv){
     exit(1);
   }
 
-  // null
-  args[len] = 0;
+  // cmd
+  char *val = join(args, len, " ");
+  char *cmd[4] = { "sh", "-c", val, 0 };
 
   // exec loop
   loop: {
@@ -184,7 +213,7 @@ main(int argc, const char **argv){
       // child
       case 0:
         if (quiet) redirect_stdout("/dev/null");
-        execvp(args[0], args);
+        execvp(cmd[0], cmd);
       // parent
       default:
         if (waitpid(pid, &status, 0) < 0) {
@@ -195,10 +224,6 @@ main(int argc, const char **argv){
         // exit > 0
         if (WEXITSTATUS(status)) {
           fprintf(stderr, "\033[90mexit: %d\33[0m\n\n", WEXITSTATUS(status));
-        } else if (quiet) {
-          // ignore
-        } else {
-          printf("\n");
         }
 
         mssleep(interval);

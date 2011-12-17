@@ -17,7 +17,7 @@
  * Command version.
  */
 
-#define VERSION "0.0.3"
+#define VERSION "0.1.0"
 
 /*
  * Default interval in milliseconds.

@@ -38,6 +38,11 @@
 static int quiet = 0;
 
 /*
+ * Halt on failure.
+ */
+static int halt = 0;
+
+/*
  * Output command usage.
  */
 
@@ -50,6 +55,7 @@ usage() {
     "  Options:\n"
     "\n"
     "    -q, --quiet           only output stderr\n"
+    "    -x, --halt            halt on failure\n"
     "    -i, --interval <n>    interval in seconds or ms defaulting to 1\n"
     "    -v, --version         output version number\n"
     "    -h, --help            output this help information\n"
@@ -159,6 +165,12 @@ main(int argc, const char **argv){
       continue;
     }
 
+    // -x, --halt
+    if (option("-x", "--halt", arg)) {
+      halt = 1;
+      continue;
+    }
+
     // -v, --version
     if (option("-v", "--version", arg)) {
       printf("%s\n", VERSION);
@@ -224,6 +236,8 @@ main(int argc, const char **argv){
         // exit > 0
         if (WEXITSTATUS(status)) {
           fprintf(stderr, "\033[90mexit: %d\33[0m\n\n", WEXITSTATUS(status));
+
+          if (halt) exit(WEXITSTATUS(status));
         }
 
         mssleep(interval);

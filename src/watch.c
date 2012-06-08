@@ -38,6 +38,11 @@
 static int quiet = 0;
 
 /*
+ * Halt on failure.
+ */
+static int halt = 0;
+
+/*
  * Output command usage.
  */
 
@@ -50,6 +55,7 @@ usage() {
     "  Options:\n"
     "\n"
     "    -q, --quiet           only output stderr\n"
+    "    -x, --halt            halt on failure\n"
     "    -i, --interval <n>    interval in seconds or ms defaulting to 1\n"
     "    -v, --version         output version number\n"
     "    -h, --help            output this help information\n"
@@ -113,7 +119,7 @@ int
 length(char **strs) {
   int n = 0;
   char *str;
-  while (str = *strs++) n += strlen(str);
+  while ((str = *strs++)) n += strlen(str);
   return n + 1;
 }
 
@@ -126,7 +132,7 @@ join(char **strs, int len, char *val) {
   --len;
   char *buf = malloc(length(strs) + len * strlen(val));
   char *str;
-  while (str = *strs++) {
+  while ((str = *strs++)) {
     strcat(buf, str);
     if (*strs) strcat(buf, val);
   }
@@ -159,7 +165,13 @@ main(int argc, const char **argv){
       continue;
     }
 
-    // -V, --version
+    // -x, --halt
+    if (option("-x", "--halt", arg)) {
+      halt = 1;
+      continue;
+    }
+
+    // -v, --version
     if (option("-v", "--version", arg)) {
       printf("%s\n", VERSION);
       exit(1);
@@ -224,6 +236,8 @@ main(int argc, const char **argv){
         // exit > 0
         if (WEXITSTATUS(status)) {
           fprintf(stderr, "\033[90mexit: %d\33[0m\n\n", WEXITSTATUS(status));
+
+          if (halt) exit(WEXITSTATUS(status));
         }
 
         mssleep(interval);

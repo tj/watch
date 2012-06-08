@@ -13,7 +13,7 @@ Options:
 
   -q, --quiet           only output stderr
   -i, --interval <n>    interval in seconds or ms defaulting to 1
-  -V, --version         output version number
+  -v, --version         output version number
 
 ```
 

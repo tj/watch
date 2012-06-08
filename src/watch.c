@@ -113,7 +113,7 @@ int
 length(char **strs) {
   int n = 0;
   char *str;
-  while (str = *strs++) n += strlen(str);
+  while ((str = *strs++)) n += strlen(str);
   return n + 1;
 }
 
@@ -126,7 +126,7 @@ join(char **strs, int len, char *val) {
   --len;
   char *buf = malloc(length(strs) + len * strlen(val));
   char *str;
-  while (str = *strs++) {
+  while ((str = *strs++)) {
     strcat(buf, str);
     if (*strs) strcat(buf, val);
   }

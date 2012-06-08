@@ -40,6 +40,7 @@ static int quiet = 0;
 /*
  * Halt on failure.
  */
+
 static int halt = 0;
 
 /*
@@ -236,7 +237,6 @@ main(int argc, const char **argv){
         // exit > 0
         if (WEXITSTATUS(status)) {
           fprintf(stderr, "\033[90mexit: %d\33[0m\n\n", WEXITSTATUS(status));
-
           if (halt) exit(WEXITSTATUS(status));
         }
 

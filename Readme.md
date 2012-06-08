@@ -12,8 +12,9 @@ Usage: watch [options] <cmd>
 Options:
 
   -q, --quiet           only output stderr
+  -x, --halt            halt on failure
   -i, --interval <n>    interval in seconds or ms defaulting to 1
-  -V, --version         output version number
+  -v, --version         output version number
 
 ```
 

@@ -1,4 +1,9 @@
 
+0.2.0 / 2012-06-08 
+==================
+
+  * Added `-x` option for halting on failure [jvirtanen]
+
 0.1.0 / 2011-12-17 
 ==================
 

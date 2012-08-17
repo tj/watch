@@ -131,7 +131,7 @@ length(char **strs) {
 char *
 join(char **strs, int len, char *val) {
   --len;
-  char *buf = malloc(length(strs) + len * strlen(val));
+  char *buf = calloc(1, length(strs) + len * strlen(val));
   char *str;
   while ((str = *strs++)) {
     strcat(buf, str);

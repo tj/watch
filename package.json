@@ -1,0 +1,9 @@
+{
+  "name": "watch",
+  "version": "0.0.1",
+  "repo": "visionmedia/watch",
+  "description": "Execute commands at a regular interval",
+  "keywords": ["watch"],
+  "license": "MIT",
+  "install": "make install"
+}

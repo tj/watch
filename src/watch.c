@@ -113,6 +113,21 @@ option(char *small, char *large, const char *arg) {
 }
 
 /*
+ * Check if `arg` is an option
+ */
+
+ int
+ isOption (const char *arg)
+ {
+  if(((!strncmp("-", arg, 1)) && (strlen(arg) > 1))
+    || ((!strncmp("--", arg, 2)) && (strlen(arg) > 2)))
+  {
+    return 1;
+  }
+  return 0;
+ }
+
+/*
  * Return the total string-length consumed by `strs`.
  */
 
@@ -187,10 +202,24 @@ main(int argc, const char **argv){
 
       // seconds or milliseconds
       arg = argv[++i];
+
+      if ((isOption(arg)) || (atoi(arg) < 1))
+      {
+        fprintf(stderr, "\n  --interval requires an argument\n\n");
+        exit(1);
+      }
+
       interval = milliseconds(arg)
         ? atoi(arg)
         : atoi(arg) * 1000;
       continue;
+    }
+
+    // check if we have extra options and print usage if so
+
+    if(isOption(arg))
+    {
+      usage();
     }
 
     // cmd args

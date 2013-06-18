@@ -1,278 +1,224 @@
-
-//
-// watch.c
-//
-// Copyright (c) 2011 TJ Holowaychuk <tj@vision-media.ca>
-//
-
 #include <stdio.h>
 #include <stdlib.h>
+#include <getopt.h>
 #include <string.h>
 #include <unistd.h>
 #include <time.h>
 #include <fcntl.h>
 #include <sys/wait.h>
+#include <stdbool.h>
 
-/*
- * Command version.
- */
+#define VERSION "0.0.1"
+#define PROGNAME "watch"
+#define MAX_ARGS 128
 
-#define VERSION "0.2.1"
+static char * progname = NULL;
 
-/*
- * Default interval in milliseconds.
- */
+static struct option option_tab[] = {
+  { "help", no_argument, 0, 'h' },
+  { "version", no_argument, 0, 'v' },
+  { "interval", required_argument, 0, 'i' },
+  { "count", required_argument, 0, 'c' },
+  { "output", required_argument, 0, 'o' },
+  { "halt", no_argument, 0, 'x' },
+  { "quiet", no_argument, 0, 'q' },
+  { "timestamp", no_argument, 0, 't' },
+  { (const char *)0, 0, 0, 0 }
+};
 
-#define DEFAULT_INTERVAL 1000
-
-/*
- * Max command args.
- */
-
-#define ARGS_MAX 128
-
-/*
- * Quiet mode.
- */
-
-static int quiet = 0;
-
-/*
- * Halt on failure.
- */
-
-static int halt = 0;
-
-/*
- * Output command usage.
- */
-
-void
-usage() {
-  printf(
-    "\n"
-    "  Usage: watch [options] <cmd>\n"
-    "\n"
-    "  Options:\n"
-    "\n"
-    "    -q, --quiet           only output stderr\n"
-    "    -x, --halt            halt on failure\n"
-    "    -i, --interval <n>    interval in seconds or ms defaulting to 1\n"
-    "    -v, --version         output version number\n"
-    "    -h, --help            output this help information\n"
-    "\n"
-    );
-  exit(1);
+void usage ()
+{
+  printf ("Usage: %s [-vhqHt] [-i <n[ms]>] [-c <count>] [-o <output_path>] <command>\n", progname);
+  exit (1);
 }
 
-/*
- * Milliseconds string.
- */
-
-int
-milliseconds(const char *str) {
-  int len = strlen(str);
-  return 'm' == str[len-2] && 's' == str[len-1];
+void version ()
+{
+  printf ("%s\n", VERSION);
+  exit (1);
 }
 
-/*
- * Sleep in `ms`.
- */
+bool is_interval_ms (const char * interval)
+{
+  int last = strlen(interval) - 1;
+  return ((interval[last] == 's') && (interval[last - 1] == 'm'));  
+}
 
-void
-mssleep(int ms) {
+void mssleep (int ms)
+{
   struct timespec req = {0};
-  time_t sec = (int)(ms / 1000);
-  ms = ms -(sec * 1000);
-  req.tv_sec = sec;
+  time_t seconds = (int) (ms / 1000);
+  ms = ms - (seconds * 1000);
+  req.tv_sec = seconds;
   req.tv_nsec = ms * 1000000L;
-  while(-1 == nanosleep(&req, &req)) ;
+  while (-1 == nanosleep (&req, NULL));
 }
 
-/*
- * Redirect stdout to `path`.
- */
-
-void
-redirect_stdout(const char *path) {
-  int fd = open(path, O_WRONLY);
-  if (dup2(fd, 1) < 0) {
-    perror("dup2()");
-    exit(1); 
-  }
-}
-
-/*
- * Check if `arg` is the given short-opt or long-opt.
- */
-
-int
-option(char *small, char *large, const char *arg) {
-  if (!strcmp(small, arg) || !strcmp(large, arg)) return 1;
-  return 0;
-}
-
-/*
- * Check if `arg` is an option
- */
-
- int
- isOption (const char *arg)
- {
-  if(((!strncmp("-", arg, 1)) && (strlen(arg) > 1))
-    || ((!strncmp("--", arg, 2)) && (strlen(arg) > 2)))
+void redirect_output (const char *path)
+{
+  int fd = open(path, O_CREAT|O_WRONLY|O_APPEND);
+  if (fd == -1)
   {
-    return 1;
+    perror ("Unable to open output file");
+    return;
   }
-  return 0;
- }
 
-/*
- * Return the total string-length consumed by `strs`.
- */
+  fflush(stdout);
 
-int
-length(char **strs) {
-  int n = 0;
-  char *str;
-  while ((str = *strs++)) n += strlen(str);
-  return n + 1;
+  if (dup2(fd, 1) < 0)
+  {
+    perror ("Unable to redirect output");
+    return;
+  }
 }
 
-/*
- * Join the given `strs` with `val`.
- */
+int main (int argc, char * const argv[])
+{
+  int interval = 1000;
+  int arg_number = 0;
+  char * command[MAX_ARGS] = {0};
+  int option = 0;
+  int count = 0;
+  progname = argv[0];
+  bool quiet = false;
+  bool halt = false;
+  bool timestamped = false;
+  char * output_path = NULL;
 
-char *
-join(char **strs, int len, char *val) {
-  --len;
-  char *buf = calloc(1, length(strs) + len * strlen(val) + 1);
-  char *str;
-  while ((str = *strs++)) {
-    strcat(buf, str);
-    if (*strs) strcat(buf, val);
-  }
-  return buf;
-}
-
-/*
- * Parse argv.
- */
-
-int
-main(int argc, const char **argv){
-  if (1 == argc) usage();
-  int interval = DEFAULT_INTERVAL;
-
-  int len = 0;
-  int interpret = 1;
-  char *args[ARGS_MAX] = {0};
-
-  for (int i = 1; i < argc; ++i) {
-    const char *arg = argv[i];
-    if (!interpret) goto arg;
-
-    // -h, --help
-    if (option("-h", "--help", arg)) usage();
-
-    // -q, --quiet
-    if (option("-q", "--quiet", arg)) {
-      quiet = 1;
-      continue;
-    }
-
-    // -x, --halt
-    if (option("-x", "--halt", arg)) {
-      halt = 1;
-      continue;
-    }
-
-    // -v, --version
-    if (option("-v", "--version", arg)) {
-      printf("%s\n", VERSION);
-      exit(1);
-    }
-
-    // -i, --interval <n>
-    if (option("-i", "--interval", arg)) {
-      if (argc-1 == i) {
-        fprintf(stderr, "\n  --interval requires an argument\n\n");
-        exit(1);
-      }
-
-      // seconds or milliseconds
-      arg = argv[++i];
-
-      if ((isOption(arg)) || (atoi(arg) < 1))
-      {
-        fprintf(stderr, "\n  --interval requires an argument\n\n");
-        exit(1);
-      }
-
-      interval = milliseconds(arg)
-        ? atoi(arg)
-        : atoi(arg) * 1000;
-      continue;
-    }
-
-    // check if we have extra options and print usage if so
-
-    if(isOption(arg))
+  while (( option = getopt_long (argc, argv, "+hvi:c:qxto:", option_tab, 0) ) != -1 )
+  {
+    switch (option)
     {
-      usage();
+    case 'h':
+      usage ();
+      break;
+    case 'v':
+      version ();
+      break;
+    case 'c':
+      count = atoi(optarg);
+      break;
+    case 'x':
+      halt = true;
+      break;
+    case 'q':
+      if (output_path != NULL)
+      {
+        fprintf (stderr, "[-q|-f <output_file>]\n");
+        usage ();
+      }
+      quiet = true;
+      break;
+    case 't':
+      timestamped = true;
+      break;
+    case 'o':
+      if (quiet == true)
+      {
+        fprintf (stderr, "[-q|-f <output_file>]\n");
+        usage ();
+      }
+      output_path = optarg;
+      break;
+    case 'i':
+      interval = ((is_interval_ms (optarg)) ? atoi (optarg) : atoi (optarg) * 1000);
+      break;
+    default:
+      fprintf (stderr, "Invalid argument\n");
+      usage ();
+      break;
+    }
+  }
+
+  while ((optind < argc) && (arg_number < MAX_ARGS))
+  {
+    command[arg_number++] = argv[optind++];
+  }
+
+  if (arg_number == 0)
+  {
+    fprintf (stderr, "No command provided\n");
+    usage ();
+  }
+
+  if (arg_number == MAX_ARGS)
+  {
+    fprintf (stderr, "Long command provided\n");
+    usage ();
+  }
+
+  loop:
+  {
+    pid_t pid = 0;
+    int status = 0;
+    static unsigned long long int repet = 0;
+    switch (pid = fork ())
+    {
+    case -1:
+      perror ("fork()");
+      return EXIT_FAILURE;
+    case 0:
+    {
+      char * buffer = (char *) malloc (512 * sizeof (char));
+
+      if (quiet == true)
+      {
+        redirect_output ("/dev/null");
+      }
+      else if (output_path != NULL)
+      {
+        redirect_output (output_path);
+      }
+
+      if (timestamped == true)
+      {
+        char date[24] = {0};
+        time_t tm;
+        time (&tm);
+        strftime (date, 24, "%F %H:%M:%S", localtime (&tm));
+        sprintf (buffer, "(%llu) %s]===>\n", repet, date);
+      }
+      else
+      {
+        sprintf (buffer, "===>\n");
+      }
+
+      write (1, buffer, strlen (buffer));
+
+      free (buffer);
+
+      execvp (command[0], command);
+    }
+      break;
+    default:
+      if (waitpid (pid, &status, 0) < 0)
+      {
+        perror ("waitpid()");
+        return EXIT_FAILURE;
+      }
+
+      if ((halt == true) && (WEXITSTATUS (status) != 0))
+      {
+        exit (WEXITSTATUS (status));
+      }
+
+      if (timestamped == true)
+      {
+        repet++;
+      }
+      break;
     }
 
-    // cmd args
-    if (len == ARGS_MAX) {
-      fprintf(stderr, "number of arguments exceeded %d\n", len);
-      exit(1);
+    if ((count != 0) && (--count == 0))
+    {
+      goto exit;
     }
 
-  arg:
-    args[len++] = (char *) arg;
-    interpret = 0;
+    mssleep (interval);
   }
+  goto loop;
 
-  // <cmd>
-  if (!len) {
-    fprintf(stderr, "\n  <cmd> required\n\n");
-    exit(1);
-  }
-
-  // cmd
-  char *val = join(args, len, " ");
-  char *cmd[4] = { "sh", "-c", val, 0 };
-
-  // exec loop
-  loop: {
-    pid_t pid;
-    int status;
-    switch (pid = fork()) {
-      // error
-      case -1:
-        perror("fork()");
-        exit(1);
-      // child
-      case 0:
-        if (quiet) redirect_stdout("/dev/null");
-        execvp(cmd[0], cmd);
-      // parent
-      default:
-        if (waitpid(pid, &status, 0) < 0) {
-          perror("waitpid()");
-          exit(1);
-        }
-
-        // exit > 0
-        if (WEXITSTATUS(status)) {
-          fprintf(stderr, "\033[90mexit: %d\33[0m\n\n", WEXITSTATUS(status));
-          if (halt) exit(WEXITSTATUS(status));
-        }
-
-        mssleep(interval);
-        goto loop;
-    }    
-  }
-
-  return 0;
+  exit:
+  return EXIT_SUCCESS;
 }
+

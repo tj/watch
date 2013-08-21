@@ -3,7 +3,13 @@
   "version": "0.2.1",
   "repo": "visionmedia/watch",
   "description": "Execute commands at a regular interval",
-  "keywords": ["watch"],
+  "keywords": [
+    "watch"
+  ],
   "license": "MIT",
-  "install": "make install"
+  "install": "make install",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visionmedia/watch.git"
+  }
 }

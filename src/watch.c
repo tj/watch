@@ -193,6 +193,9 @@ main(int argc, const char **argv){
       continue;
     }
 
+    // unknown option
+    if (arg[0] == '-') usage();
+
     // cmd args
     if (len == ARGS_MAX) {
       fprintf(stderr, "number of arguments exceeded %d\n", len);

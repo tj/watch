@@ -210,7 +210,10 @@ int main (int argc, char * const argv[])
 
       free (buffer);
 
-      execvp (command[0], command);
+      if(execvp (command[0], command) == -1) {
+		perror ("execvp()");
+		return EXIT_FAILURE;
+	  }
     }
       break;
     default:

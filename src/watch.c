@@ -23,12 +23,13 @@ static struct option option_tab[] = {
   { "halt", no_argument, 0, 'x' },
   { "quiet", no_argument, 0, 'q' },
   { "timestamp", no_argument, 0, 't' },
+  { "clear-screen", no_argument, 0, 'l' },
   { (const char *)0, 0, 0, 0 }
 };
 
 void usage ()
 {
-  printf ("Usage: %s [-vhqHt] [-i <n[ms]>] [-c <count>] [-o <output_path>] <command>\n", progname);
+  printf ("Usage: %s [-vhqHlt] [-i <n[ms]>] [-c <count>] [-o <output_path>] <command>\n", progname);
   exit (1);
 }
 
@@ -82,10 +83,11 @@ int main (int argc, char * const argv[])
   progname = argv[0];
   bool quiet = false;
   bool halt = false;
+  bool clear_screen = false;
   bool timestamped = false;
   char * output_path = NULL;
 
-  while (( option = getopt_long (argc, argv, "+hvi:c:qxto:", option_tab, 0) ) != -1 )
+  while (( option = getopt_long (argc, argv, "+hvi:c:qxlto:", option_tab, 0) ) != -1 )
   {
     switch (option)
     {
@@ -122,6 +124,9 @@ int main (int argc, char * const argv[])
       break;
     case 'i':
       interval = ((is_interval_ms (optarg)) ? atoi (optarg) : atoi (optarg) * 1000);
+      break;
+	case 'l':
+      clear_screen = true;
       break;
     default:
       fprintf (stderr, "Invalid argument\n");
@@ -169,6 +174,15 @@ int main (int argc, char * const argv[])
       {
         redirect_output (output_path);
       }
+	  
+	  if (clear_screen == true)
+	  {
+#ifdef _WIN32
+		system("cls");
+#else
+		system("clear");
+#endif
+	  }
 
       if (timestamped == true)
       {

@@ -99,9 +99,9 @@ int main (int argc, char * const argv[])
       break;
     case 'c':
 	{
-	  char * endptr = 0;
+	  char * endptr = NULL;
 	  strtol(optarg, &endptr, 10);
-	  if (endptr != 0 && endptr < (optarg + strlen(optarg)))
+	  if (endptr != NULL && endptr < (optarg + strlen(optarg)))
 	  {
 		fprintf (stderr, "[-c <number>]\n");
         usage ();
@@ -184,7 +184,7 @@ int main (int argc, char * const argv[])
         redirect_output (output_path);
       }
 	  
-	  if (clear_screen == true)
+	  if (clear_screen == true && output_path == NULL)
 	  {
 #ifdef _WIN32
 		system("cls");

@@ -98,7 +98,16 @@ int main (int argc, char * const argv[])
       version ();
       break;
     case 'c':
+	{
+	  char * endptr = 0;
+	  strtol(optarg, &endptr, 10);
+	  if (endptr != 0 && endptr < (optarg + strlen(optarg)))
+	  {
+		fprintf (stderr, "[-c <number>]\n");
+        usage ();
+	  }
       count = atoi(optarg);
+	}
       break;
     case 'x':
       halt = true;

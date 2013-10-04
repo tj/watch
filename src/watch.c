@@ -98,16 +98,16 @@ int main (int argc, char * const argv[])
       version ();
       break;
     case 'c':
-	{
-	  char * endptr = NULL;
-	  strtol(optarg, &endptr, 10);
-	  if (endptr != NULL && endptr < (optarg + strlen(optarg)))
-	  {
-		fprintf (stderr, "[-c <number>]\n");
-        usage ();
-	  }
-      count = atoi(optarg);
-	}
+      {
+        char * endptr = NULL;
+        strtol(optarg, &endptr, 10);
+        if (endptr != NULL && endptr < (optarg + strlen(optarg)))
+        {
+          fprintf (stderr, "[-c <number>]\n");
+          usage ();
+        }
+        count = atoi(optarg);
+      }
       break;
     case 'x':
       halt = true;
@@ -210,10 +210,11 @@ int main (int argc, char * const argv[])
 
       free (buffer);
 
-      if(execvp (command[0], command) == -1) {
-		perror ("execvp()");
-		return EXIT_FAILURE;
-	  }
+      if(execvp (command[0], command) == -1)
+      {
+        perror ("execvp()");
+        return EXIT_FAILURE;
+      }
     }
       break;
     default:

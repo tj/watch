@@ -1,4 +1,3 @@
-
 # Watch
 
   A tiny C program used to periodically execute a command.
@@ -15,6 +14,10 @@ Options:
   -x, --halt            halt on failure
   -i, --interval <n>    interval in seconds or ms defaulting to 1
   -v, --version         output version number
+  -l, --clear-screen
+  -t, --timestamp
+  -c, --count
+  -o, --output
 
 ```
 

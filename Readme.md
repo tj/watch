@@ -1,8 +1,6 @@
-# Watch
+# Watch ![Build Status](https://www.codeship.io/projects/a64f5450-a123-0131-5e6e-32de8e137a5c/status)
 
   A tiny C program used to periodically execute a command.
-  
-  ![Build Status](https://www.codeship.io/projects/a64f5450-a123-0131-5e6e-32de8e137a5c/status)
 
 ## Usage
 

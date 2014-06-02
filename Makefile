@@ -6,6 +6,9 @@ all: watch
 
 watch: src/watch.c
 	$(CC) $< $(CFLAGS) -o $@
+	
+debug: src/watch.c
+	$(CC) $< $(CFLAGS) -g -o $@
 
 install: watch
 	install watch $(PREFIX)/bin/watch

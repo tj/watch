@@ -12,6 +12,7 @@
 #include <time.h>
 #include <fcntl.h>
 #include <sys/wait.h>
+#include "ms/ms.h"
 
 /*
  * Command version.
@@ -66,16 +67,6 @@ usage() {
 }
 
 /*
- * Milliseconds string.
- */
-
-int
-milliseconds(const char *str) {
-  int len = strlen(str);
-  return 'm' == str[len-2] && 's' == str[len-1];
-}
-
-/*
  * Sleep in `ms`.
  */
 
@@ -98,7 +89,7 @@ redirect_stdout(const char *path) {
   int fd = open(path, O_WRONLY);
   if (dup2(fd, 1) < 0) {
     perror("dup2()");
-    exit(1); 
+    exit(1);
   }
 }
 
@@ -182,14 +173,15 @@ main(int argc, const char **argv){
     if (option("-i", "--interval", arg)) {
       if (argc-1 == i) {
         fprintf(stderr, "\n  --interval requires an argument\n\n");
-        exit(1);
+	exit(1);
       }
 
-      // seconds or milliseconds
       arg = argv[++i];
-      interval = milliseconds(arg)
-        ? atoi(arg)
-        : atoi(arg) * 1000;
+      char last = arg[strlen(arg) - 1];
+      // seconds or milliseconds
+      interval = last >= 'a' && last <= 'z'
+	? string_to_milliseconds(arg)
+	: atoi(arg) * 1000;
       continue;
     }
 
@@ -237,12 +229,12 @@ main(int argc, const char **argv){
         // exit > 0
         if (WEXITSTATUS(status)) {
           fprintf(stderr, "\033[90mexit: %d\33[0m\n\n", WEXITSTATUS(status));
-          if (halt) exit(WEXITSTATUS(status));
-        }
+	  if (halt) exit(WEXITSTATUS(status));
+	}
 
-        mssleep(interval);
-        goto loop;
-    }    
+	mssleep(interval);
+	goto loop;
+    }
   }
 
   return 0;

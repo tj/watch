@@ -1,0 +1,12 @@
+{
+  "name": "ms",
+  "version": "0.0.4",
+  "repo": "clibs/ms",
+  "description": "String to microsecond & millisecond utilities",
+  "keywords": ["ms", "us", "usec", "millisecond", "microsecond", "conversion", "convert"],
+  "license": "MIT",
+  "src": ["ms.c", "ms.h"],
+  "dependencies": {
+    "littlstar/asprintf.c": "0.0.3"
+  }
+}

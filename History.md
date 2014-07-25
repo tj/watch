@@ -1,4 +1,10 @@
 
+
+0.3.0 / 2014-07-25
+==================
+
+ * watch.c: Use clibs/ms for better interval parsing (1m, 12y, 45s, etc.)
+
 0.2.1 / 2012-08-17 
 ==================
 

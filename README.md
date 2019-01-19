@@ -13,7 +13,8 @@ Options:
 
   -q, --quiet           only output stderr
   -x, --halt            halt on failure
-  -i, --interval <n>    interval in seconds or ms defaulting to 1
+  -i, --interval <n>    interval in seconds, 1 is default
+  -s, --slow            pause x10 longer while command fails (useful for reading error output without flicker)
   -v, --version         output version number
 
 ```
@@ -35,7 +36,7 @@ $ PREFIX=~ make install
   This project is very similar to original [watch(1)](http://linux.die.net/man/1/watch) implemented in 1991, differences include:
 
   - ansi escape sequences (colors etc)
-  - terminal is not cleared
+  - terminal is not cleared (just add "clear &&" before your command if you want this!)
   - lower default interval of 1s
   - millisecond interval resolution
 
@@ -134,4 +135,4 @@ clean:
 .PHONY: clean
 ```
 
-  The one missing component is periodical action, which is where `watch(1)` or similar utilities come in, this functionality coupled with Make as a build system creates a powerful duo. 
+  The one missing component is periodical action, which is where `watch(1)` or similar utilities come in, this functionality coupled with make as a build system creates a powerful duo. 

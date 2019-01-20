@@ -45,6 +45,17 @@ static int quiet = 0;
 static int halt = 0;
 
 /*
+ * Slow on failure.
+ */
+
+static int slow = 0;
+
+/*
+ * 1 if last execution failed, 0 otherwise
+ */
+static int failed = 0;
+
+/*
  * Output command usage.
  */
 
@@ -58,6 +69,7 @@ usage() {
     "\n"
     "    -q, --quiet           only output stderr\n"
     "    -x, --halt            halt on failure\n"
+    "    -s, --slow            slow down on failure\n"
     "    -i, --interval <n>    interval in seconds or ms defaulting to 1\n"
     "    -v, --version         output version number\n"
     "    -h, --help            output this help information\n"
@@ -116,6 +128,18 @@ length(char **strs) {
 }
 
 /*
+ * Calculate how long to sleep depending on slow flag
+ */
+int
+wait_time(int interval) {
+  if (!slow)
+    return interval;
+  if (failed)
+    return interval * 10;
+  return interval;
+}
+
+/*
  * Join the given `strs` with `val`.
  */
 
@@ -163,6 +187,12 @@ main(int argc, const char **argv){
       continue;
     }
 
+    // -s, --slow
+    if (option("-s", "--slow", arg)) {
+      slow = 1;
+      continue;
+    }
+
     // -v, --version
     if (option("-v", "--version", arg)) {
       printf("%s\n", VERSION);
@@ -173,15 +203,15 @@ main(int argc, const char **argv){
     if (option("-i", "--interval", arg)) {
       if (argc-1 == i) {
         fprintf(stderr, "\n  --interval requires an argument\n\n");
-	exit(1);
+        exit(1);
       }
 
       arg = argv[++i];
       char last = arg[strlen(arg) - 1];
       // seconds or milliseconds
       interval = last >= 'a' && last <= 'z'
-	? string_to_milliseconds(arg)
-	: atoi(arg) * 1000;
+      ? string_to_milliseconds(arg)
+      : atoi(arg) * 1000;
       continue;
     }
 
@@ -191,7 +221,7 @@ main(int argc, const char **argv){
       exit(1);
     }
 
-  arg:
+    arg:
     args[len++] = (char *) arg;
     interpret = 0;
   }
@@ -213,27 +243,30 @@ main(int argc, const char **argv){
     switch (pid = fork()) {
       // error
       case -1:
-        perror("fork()");
-        exit(1);
+      perror("fork()");
+      exit(1);
       // child
       case 0:
-        if (quiet) redirect_stdout("/dev/null");
-        execvp(cmd[0], cmd);
+      if (quiet) redirect_stdout("/dev/null");
+      execvp(cmd[0], cmd);
       // parent
       default:
-        if (waitpid(pid, &status, 0) < 0) {
-          perror("waitpid()");
-          exit(1);
-        }
+      if (waitpid(pid, &status, 0) < 0) {
+        perror("waitpid()");
+        exit(1);
+      }
 
         // exit > 0
-        if (WEXITSTATUS(status)) {
-          fprintf(stderr, "\033[90mexit: %d\33[0m\n\n", WEXITSTATUS(status));
-	  if (halt) exit(WEXITSTATUS(status));
-	}
+      if (WEXITSTATUS(status)) {
+        fprintf(stderr, "\033[90mexit: %d\33[0m\n\n", WEXITSTATUS(status));
+        if (halt) exit(WEXITSTATUS(status));
+        failed = 1;
+      }
+      else
+        failed = 0;
 
-	mssleep(interval);
-	goto loop;
+      mssleep(wait_time(interval));
+      goto loop;
     }
   }
 

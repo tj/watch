@@ -14,7 +14,9 @@ Options:
   -q, --quiet           only output stderr
   -x, --halt            halt on failure
   -i, --interval <n>    interval in seconds or ms defaulting to 1
+  -c, --clear           clear the screen between iterations
   -v, --version         output version number
+  -h, --help            output this help information
 
 ```
 
@@ -35,7 +37,7 @@ $ PREFIX=~ make install
   This project is very similar to original [watch(1)](http://linux.die.net/man/1/watch) implemented in 1991, differences include:
 
   - ansi escape sequences (colors etc)
-  - terminal is not cleared
+  - terminal is not cleared (unless `--clear` is provided)
   - lower default interval of 1s
   - millisecond interval resolution
 

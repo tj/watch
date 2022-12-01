@@ -1,6 +1,6 @@
 {
   "name": "watch",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "repo": "visionmedia/watch",
   "description": "Execute commands at a regular interval",
   "keywords": ["watch"],
